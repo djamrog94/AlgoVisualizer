@@ -358,9 +358,8 @@ class Node:
                 new_node = Node(current_node, node_position)
                 children.append(new_node)
 
+            # check children if not in open list or closed list, calculate dist, e, and t; append to open list
             for child in children:
-
-                # check children if not in open list or closed list, calculate dist, e, and t; append to open list
                 if child not in open_list and child not in closed_list:
                     child.dist = current_node.dist + 1
                     child.e = abs(child.position[0] - end_node.position[0]) +\
