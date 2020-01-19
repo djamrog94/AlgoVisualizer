@@ -62,7 +62,7 @@ class App(tk.Tk):
     def drop_down(self):
         """Function: drop_down -- open up json file with saved layouts.
            Params:   n/a
-           Returns:  a list of all the layout names
+           Returns:  a list of the layout names
 
         """
         with open('walls.json') as json_file:
@@ -71,7 +71,7 @@ class App(tk.Tk):
 
     def layout(self, event):
         """Function: layout -- open up json file with saved layouts and updates layout and walls
-           dict with the selected layout
+           list with the selected layout
            Params:   event -- the option from the drop down menu that has been selected
            Returns:  n/a
 
@@ -79,7 +79,7 @@ class App(tk.Tk):
         with open('walls.json') as json_file:
             data = json.load(json_file)
 
-        # updates the wall dictionary based on layout selected
+        # updates the wall list based on layout selected
         for option in data.keys():
             if option == event:
                 self.walls = data[option]
@@ -171,7 +171,7 @@ class App(tk.Tk):
             point = 'starting'
             self.method = 'Ending Point'
 
-        # if a point, update tile color to new_color
+        # if a point already exists, update old tile color to grey
         if point != '':
             if len(self.points[point]) != 0:
                 old_tile = self.tiles[self.points[point][0], self.points[point][1]]
@@ -179,6 +179,8 @@ class App(tk.Tk):
                 self.points[point] = [row, column]
             else:
                 self.points[point] = [row, column]
+
+        # update tile color to new color
         self.canvas.itemconfigure(tile, fill=new_color)
 
         # update status
