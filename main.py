@@ -1,12 +1,11 @@
 import tkinter as tk
 import time
 import json
-import timeit
 
-ROWS = 30
-COLUMNS = 30
-WIDTH = 20
-HEIGHT = 20
+ROWS = 50
+COLUMNS = 50
+WIDTH = 10
+HEIGHT = 10
 SLEEP = 0.01
 
 #TODO let drag drop start and end points
@@ -107,6 +106,8 @@ class App(tk.Tk):
         for wall in self.walls:
             tile = self.tiles[wall[0], wall[1]]
             self.canvas.itemconfigure(tile, fill='black')
+        self.points['starting'] = []
+        self.points['ending'] = []
 
     def debug(self, event):
         """Function: debug -- prints start / end point and walls when 'd' is pressed
