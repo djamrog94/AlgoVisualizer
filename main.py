@@ -180,15 +180,21 @@ class App(tk.Tk):
 
         # update new_color and which point
         elif self.method == 'Ending Point':
-            new_color = 'red'
-            point = 'ending'
+            if [row, column] not in self.walls:
+                new_color = 'red'
+                point = 'ending'
+            else:
+                new_color = 'black'
         elif self.method == 'Starting Point':
-            new_color = 'green'
-            point = 'starting'
-            self.method = 'Ending Point'
+            if [row, column] not in self.walls:
+                new_color = 'green'
+                point = 'starting'
+                self.method = 'Ending Point'
+            else:
+                new_color = 'black'
 
         # if a point already exists, update old tile color to grey
-        if point != '':
+        if point != '' and [row, column] not in self.walls:
             if len(self.points[point]) != 0:
                 old_tile = self.tiles[self.points[point][0], self.points[point][1]]
                 self.canvas.itemconfigure(old_tile, fill='grey')
