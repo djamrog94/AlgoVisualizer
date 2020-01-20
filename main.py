@@ -1,6 +1,7 @@
 import tkinter as tk
 import time
 import json
+import timeit
 
 ROWS = 30
 COLUMNS = 30
@@ -25,6 +26,7 @@ class App(tk.Tk):
         self.tiles = {}
         self.walls = []
         self.method = 'Starting Point'
+        self.algorithm = 'Euclidean'
         self.points = {'starting': [],
                        'ending': []}
         self.status = tk.Label(self, anchor="w")
@@ -52,7 +54,13 @@ class App(tk.Tk):
         self.dropVar.set('Layout: 0')
         options = self.drop_down()
         w = tk.OptionMenu(self, self.dropVar, *options, command=self.layout)
-        w.pack(side=tk.RIGHT)
+        w.pack(side=tk.BOTTOM)
+
+        self.dropVar2 = tk.StringVar()
+        self.dropVar2.set('Euclidean')
+        options2 = ['Euclidean', 'Pythagorean']
+        w = tk.OptionMenu(self, self.dropVar2, *options2, command=self.drop_down2)
+        w.pack(side=tk.BOTTOM)
 
         # create bindings
         self.bind("<B1-Motion>", self.click_drag)
@@ -62,12 +70,20 @@ class App(tk.Tk):
     def drop_down(self):
         """Function: drop_down -- open up json file with saved layouts.
            Params:   n/a
-           Returns:  a list of the layout names
+           Returns:  list of the layout names
 
         """
         with open('walls.json') as json_file:
             data = json.load(json_file)
             return list(data.keys())
+
+    def drop_down2(self, event):
+        """Function: drop_down2 -- return what algo to run
+           Params:   n/a
+           Returns:  event
+
+        """
+        self.algorithm = event
 
     def layout(self, event):
         """Function: layout -- open up json file with saved layouts and updates layout and walls
@@ -236,14 +252,28 @@ class App(tk.Tk):
             self.status.configure(text='Missing start or ending point!')
         else:
 
+            # reset grid
+            for tile in self.tiles.values():
+                self.canvas.itemconfigure(tile, fill='grey')
+
+            for wall in self.walls:
+                tile = self.tiles[wall[0], wall[1]]
+                self.canvas.itemconfigure(tile, fill='black')
+            tile = self.tiles[self.points['starting'][0], self.points['starting'][1]]
+            self.canvas.itemconfigure(tile, fill='green')
+            tile = self.tiles[self.points['ending'][0], self.points['ending'][1]]
+            self.canvas.itemconfigure(tile, fill='red')
             # run algo
             try:
+                start_time = time.process_time()
                 path, closed_list = node.path_finding(self.points['starting'], self.points['ending'], self.walls)
-
+                timed = time.process_time() - start_time
                 # run paint function for checked tiles and correct path
                 app.paint(closed_list, 'blue')
                 app.paint(path, 'yellow')
-
+                self.status.configure(text=f'{self.algorithm} algorithm took {timed:.5f} sec. to run.'
+                                           f' Tested {len(closed_list)} tiles to find shortest path of'
+                                           f' {len(path)} tiles.')
             # no path exists
             except TypeError as e:
                 self.status.configure(text=f'No path exists!')
@@ -302,9 +332,14 @@ class Node:
         end_node = Node(None, end)
 
         # calculate e and t of starting node
-        start_node.e = abs(start_node.position[0] - end_node.position[0]) +\
-                       abs(start_node.position[1] - end_node.position[1])
-        start_node.t = start_node.dist + start_node.e
+        if app.algorithm == 'Euclidean':
+            start_node.e = abs(start_node.position[0] - end_node.position[0]) +\
+                           abs(start_node.position[1] - end_node.position[1])
+            start_node.t = start_node.dist + start_node.e
+        else:
+            start_node.e = ((start_node.position[0] - end_node.position[0]) ** 2) + \
+                           ((start_node.position[1] - end_node.position[1]) ** 2)
+            start_node.t = start_node.dist + start_node.e
 
         walls = walls
 
@@ -364,9 +399,14 @@ class Node:
             for child in children:
                 if child not in open_list and child not in closed_list:
                     child.dist = current_node.dist + 1
-                    child.e = abs(child.position[0] - end_node.position[0]) +\
-                              abs(child.position[1] - end_node.position[1])
-                    child.t = child.dist + child.e
+                    if app.algorithm == 'Euclidean':
+                        child.e = abs(child.position[0] - end_node.position[0]) +\
+                                  abs(child.position[1] - end_node.position[1])
+                        child.t = child.dist + child.e
+                    else:
+                        child.e = ((child.position[0] - end_node.position[0]) ** 2) + \
+                                       ((child.position[1] - end_node.position[1]) ** 2)
+                        child.t = child.dist + child.e
                     open_list.append(child)
 
 
